@@ -1,0 +1,49 @@
+
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/monitoring_db
+    username: postgres
+    password: senha123
+  flyway:
+    enabled: true
+
+  management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+
+  global:
+    scrape_interval: 5s
+  scrape_configs:
+    - job_name: 'spring-actuator'
+      metrics_path: '/actuator/prometheus'
+      static_configs:
+        - targets: [ 'host.docker.internal:8080' ]
+
+
+  zipkin:
+      base-url: http://localhost:9411
+      management:
+      tracing:
+      sampling:
+        probability: 1.0
+
+  spring:
+    kafka:
+      bootstrap-servers: localhost:9092
+      producer:
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      consumer:
+        group-id: monitoring-group
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        properties:
+          spring.json.trusted.packages: "*"
